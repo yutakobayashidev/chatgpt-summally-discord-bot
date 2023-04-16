@@ -1,0 +1,27 @@
+# Python-related ignores
+__pycache__/
+*.pyc
+*.pyo
+
+# Package-related ignores
+*.egg-info/
+dist/
+build/
+
+# IDE-related ignores
+.vscode/
+.idea/
+
+# Test-related ignores
+.pytest_cache/
+.coverage
+
+# Mypy-related ignores
+.mypy_cache/
+
+# Environment-related ignores
+.env
+
+# macOS
+
+.DS_Store
