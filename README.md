@@ -1,4 +1,4 @@
-# chatgpt-sumally-discord-bot
+# chatgpt-summally-discord-bot
 
 This Discord bot uses OpenAI's ChatGPT API to retrieve text from URLs included in messages that have been reacted to with the 🔍 emoji, and then responds with a summary of the text.
 
