@@ -24,6 +24,10 @@ async def on_raw_reaction_add(payload):
     if payload.emoji.name == "🔍":
         print("Reaction recognized: 🔍")
         url = extract_url_from_message(message.content)
+        if url is None:
+            await message.reply("URL not detected.")
+            return
+        
         summary, cost = summarize_and_translate(url)
 
         if summary is None or cost is None:
@@ -39,7 +43,8 @@ async def on_ready():
 
 def extract_url_from_message(content):
     url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-    return re.findall(url_pattern, content)[0]
+    urls = re.findall(url_pattern, content)
+    return urls[0] if urls else None
 
 def ask_gpt(prompt):
     try:
