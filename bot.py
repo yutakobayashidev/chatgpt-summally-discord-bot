@@ -69,11 +69,6 @@ def ask_gpt(prompt):
         raise Exception(e)
 
 
-def sort_languages(language_list, first_language):
-    language_list.sort(key=lambda x: (x != first_language, x))
-    return language_list
-
-
 def summarize_and_translate(url):
 
     response = requests.get(url)
