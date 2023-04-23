@@ -16,6 +16,7 @@ intents.reactions = True
 
 client = discord.Client(intents=intents)
 
+
 @client.event
 async def on_raw_reaction_add(payload):
     text_channel = client.get_channel(payload.channel_id)
@@ -27,7 +28,7 @@ async def on_raw_reaction_add(payload):
         if url is None:
             await message.reply("URL not detected.")
             return
-        
+
         summary, cost = summarize_and_translate(url)
 
         if summary is None or cost is None:
@@ -37,21 +38,25 @@ async def on_raw_reaction_add(payload):
             await message.reply(f"{summary}\n\nAPI usage cost: {cost:.4f}$")
             print("Replied with summary.")
 
+
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user}')
 
+
 def extract_url_from_message(content):
-    url_pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+    url_pattern = re.compile(
+        r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
     urls = re.findall(url_pattern, content)
     return urls[0] if urls else None
+
 
 def ask_gpt(prompt):
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "入力された文章を要約してください。\n制約条件\n・文章は簡潔にわかりやすく。\n・箇条書きで3行以内で出力。\n・1行あたりの文字数は80文字程度。\n・重要なキーワードは取り逃がさない。\n・要約した文章は日本語へ翻訳。" },
+                {"role": "system", "content": "入力された文章を要約してください。\n制約条件\n・文章は簡潔にわかりやすく。\n・箇条書きで3行以内で出力。\n・1行あたりの文字数は80文字程度。\n・重要なキーワードは取り逃がさない。\n・要約した文章は日本語へ翻訳。"},
                 {"role": "user", "content": prompt},
             ],
         )
@@ -61,6 +66,7 @@ def ask_gpt(prompt):
         return message, tokens_used
     except Exception as e:
         raise Exception(e)
+
 
 def summarize_and_translate(url):
     response = requests.get(url)
@@ -82,6 +88,7 @@ def summarize_and_translate(url):
 
     return summary, cost
 
+
 def find_main_content(soup):
     for tag in ['article', 'main', 'div']:
         main_content = soup.find(tag)
@@ -89,10 +96,12 @@ def find_main_content(soup):
             break
     return main_content
 
+
 def extract_text_from_content(content):
     paragraphs = content.find_all('p')
     if not paragraphs:
         return None
     return ' '.join([p.get_text() for p in paragraphs])
 
-client.run(os.getenv("DISOCRD_TOKEN"))
+
+client.run(os.getenv("DISCORD_TOKEN"))
