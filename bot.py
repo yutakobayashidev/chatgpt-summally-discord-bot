@@ -5,6 +5,7 @@ import openai
 from bs4 import BeautifulSoup
 import os
 from dotenv import load_dotenv
+from youtube_transcript_api import YouTubeTranscriptApi
 
 load_dotenv(verbose=True)
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -68,25 +69,56 @@ def ask_gpt(prompt):
         raise Exception(e)
 
 
+def sort_languages(language_list, first_language):
+    language_list.sort(key=lambda x: (x != first_language, x))
+    return language_list
+
+
 def summarize_and_translate(url):
+
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    main_content = find_main_content(soup)
+    match = re.search(
+        "^https?://(?:www\.)?(?:youtu\.be/|youtube\.com/watch\?v=)([\w-]+)", url)
+    if match:
+        video_id = match.group(1)
 
-    if not main_content:
-        print("🚩 Failed to parse the HTML")
-        return None, None
+        try:
+            transcript_list = YouTubeTranscriptApi.get_transcript(
+                video_id, languages=["ja", "en"])
 
-    content = extract_text_from_content(main_content)
-    if not content:
-        print("🚩 Failed to parse the HTML")
-        return None, None
-    print(f"Content length: {len(content)} characters")
-    summary, tokens_used = ask_gpt(content)
-    cost = tokens_used * 0.000002
+            transcript = convert_transcript_list(
+                transcript_list) if transcript_list else []
 
-    return summary, cost
+            summary, tokens_used = ask_gpt(transcript)
+            cost = tokens_used * 0.000002
+
+            return summary, cost
+        except:
+            return None, None
+    else:
+        print("No video ID found")
+
+        main_content = find_main_content(soup)
+
+        if not main_content:
+            print("🚩 Failed to parse the HTML")
+            return None, None
+
+        content = extract_text_from_content(main_content)
+        if not content:
+            print("🚩 Failed to parse the HTML")
+            return None, None
+        print(f"Content length: {len(content)} characters")
+        summary, tokens_used = ask_gpt(content)
+        cost = tokens_used * 0.000002
+
+        return summary, cost
+
+
+def convert_transcript_list(transcript_list):
+    return ''.join(v['text'] for v in transcript_list)
 
 
 def find_main_content(soup):
