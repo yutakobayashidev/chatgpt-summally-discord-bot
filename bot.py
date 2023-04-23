@@ -71,11 +71,9 @@ def ask_gpt(prompt):
 
 def summarize_and_translate(url):
 
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
-
     match = re.search(
         "^https?://(?:www\.)?(?:youtu\.be/|youtube\.com/watch\?v=)([\w-]+)", url)
+
     if match:
         video_id = match.group(1)
 
@@ -93,7 +91,9 @@ def summarize_and_translate(url):
         except:
             return None, None
     else:
-        print("No video ID found")
+
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
 
         main_content = find_main_content(soup)
 
